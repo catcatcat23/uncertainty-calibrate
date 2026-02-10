@@ -19,7 +19,7 @@
 * **mcdropout_infer_singlepad.py**: 使用蒙特卡洛（MC）Dropout方法进行不确定性估计并进行推理。
 * **fusion_version_singlepad.py**: 使用不同模型版本的融合方法进行推理。
 * **ts_gridsearch_singlepad.py**: 在黑盒测试集上和软标签测试集上执行网格搜索，找到最佳的全局温度和按类温度。
-* **duplicate_imgs.csv**: 包含需要标注的图像对的 CSV 文件。
+* **checked_sample.csv/calibrate_withsoftlabels.csv**: 包含需要标注的图像对的 CSV 文件。
 
 ### 使用说明
 
