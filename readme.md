@@ -1,4 +1,4 @@
-明白了，我会根据你提供的信息更加详细地说明每个脚本需要修改的配置，并确保用户能根据自己的需求顺利运行各个脚本。
+
 
 ---
 
@@ -29,15 +29,9 @@
 
 ##### 1.1 **annotate_pairs_gradio.py**
 
-此脚本用于标注软标签数据对。在运行时，确保修改以下路径：
+此脚本用于标注软标签数据对。
 
-```python
-# 检查点路径
-CKPT_DIR = "/home/cat/workspace/vlm/scripts/models/checkpoints"  
 
-# 数据路径
-ROOT_DIR = "/home/cat/workspace/defect_data/defect_DA758_black_uuid_250310/send2terminal/250310"
-CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
 ```
 
 ##### 1.2 **baseline_infer_singlepad.py**
@@ -51,6 +45,18 @@ CKPT_DIR = "/home/cat/workspace/vlm/scripts/models/checkpoints"
 # 数据路径
 ROOT_DIR = "/home/cat/workspace/defect_data/defect_DA758_black_uuid_250310/send2terminal/250310"
 CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
+
+def _build_model_for_part(part_name: str) -> MPB3net:
+    if part_name not in PART_CONFIG:
+        raise ValueError(f"未知 part_name: {part_name}，请在 PART_CONFIG 里加配置。")
+
+    cfg = PART_CONFIG[part_name]
+    ckpt_path = _find_ckpt(cfg["ckpt_pattern"])
+    # 如需固定为某个 ckpt，可以在这里覆盖：
+    ckpt_path = (
+        "/home/cat/workspace/vlm/scripts/models/checkpoints/singlepadfcdropoutmobilenetv3largers6464s42c3val0.1b256_ckp_v0.18.9lhf1certainlut05cp05clean20.0j0.4lr0.025nb256nm256dual2top2.pth.tar"
+    )
+
 ```
 
 ##### 1.3 **deepensemble_infer_singlepad.py**
@@ -83,6 +89,18 @@ CKPT_DIR = "/home/cat/workspace/vlm/scripts/models/checkpoints"
 # 数据路径
 ROOT_DIR = "/home/cat/workspace/defect_data/defect_DA758_black_uuid_250310/send2terminal/250310"
 CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
+
+def _build_model_for_part(part_name: str) -> MPB3net:
+    if part_name not in PART_CONFIG:
+        raise ValueError(f"未知 part_name: {part_name}，请在 PART_CONFIG 里加配置。")
+
+    cfg = PART_CONFIG[part_name]
+    ckpt_path = _find_ckpt(cfg["ckpt_pattern"])
+    # 如需固定为某个 ckpt，可以在这里覆盖：
+    ckpt_path = (
+        "/home/cat/workspace/vlm/scripts/models/checkpoints/singlepadfcdropoutmobilenetv3largers6464s42c3val0.1b256_ckp_v0.18.9lhf1certainlut05cp05clean20.0j0.4lr0.025nb256nm256dual2top2.pth.tar"
+    )
+
 ```
 
 ##### 1.5 **mcdropout_infer_singlepad.py**
@@ -98,7 +116,27 @@ ROOT_DIR = "/home/cat/workspace/defect_data/defect_DA758_black_uuid_250310/send2
 CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
 
 # MCDropout的检查点路径
-ckpt_path = "/home/cat/workspace/vlm/scripts/models/checkpoints/bayesian_weighted_ensemble_acc0.9028.pth.tar"
+def _build_model_for_part(part_name: str) -> MPB3net:
+    if part_name not in PART_CONFIG:
+        raise ValueError(f"未知 part_name: {part_name}，请在 PART_CONFIG 里加配置。")
+
+    cfg = PART_CONFIG[part_name]
+    ckpt_path = _find_ckpt(cfg["ckpt_pattern"])
+    ckpt_path = (
+        "/home/cat/workspace/vlm/scripts/models/checkpoints/bayesian_weighted_ensemble_acc0.9028.pth.tar"
+    )
+    print(f"=> 为 {part_name} 加载 CNN 模型: {ckpt_path}")
+
+    model = load_mpb3_ckpt_auto(
+        ckpt_path=ckpt_path,
+        backbone_arch=cfg["backbone"],
+        n_class=cfg["n_class"],
+        n_units=cfg["n_units"],
+        output_type="dual2",
+        device=DEVICE,
+    )
+    return model
+
 ```
 
 ##### 1.6 **fusion_version_singlepad.py**
@@ -111,6 +149,7 @@ ENSEMBLE_CKPT_PATHS = [
     "/home/cat/workspace/vlm/scripts/models/checkpoints/p2/singlepadfcdropoutmobilenetv3largers6464s8c3val0.1b256_ckp_v0.18.9lhf1certainretrainlut05cp05clean20.0j0.4lr0.1nb256nm256dual2bestacc.pth.tar",
     # 其他模型检查点...
 ]
+
 ```
 
 ##### 1.7 **ts_gridsearch_singlepad.py**
@@ -124,6 +163,27 @@ CKPT_DIR = "/home/cat/workspace/vlm/scripts/models/checkpoints"
 # 数据路径
 ROOT_DIR = "/home/cat/workspace/defect_data/defect_DA758_black_uuid_250310/send2terminal/250310"
 CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
+def _build_model_for_part(part_name: str) -> MPB3net:
+    if part_name not in PART_CONFIG:
+        raise ValueError(f"未知 part_name: {part_name}，请在 PART_CONFIG 里加配置。")
+
+    cfg = PART_CONFIG[part_name]
+    ckpt_path = _find_ckpt(cfg["ckpt_pattern"])
+    ckpt_path = (
+        "/home/cat/workspace/vlm/scripts/models/checkpoints/bayesian_weighted_ensemble_acc0.9028.pth.tar"
+    )
+    print(f"=> 为 {part_name} 加载 CNN 模型: {ckpt_path}")
+
+    model = load_mpb3_ckpt_auto(
+        ckpt_path=ckpt_path,
+        backbone_arch=cfg["backbone"],
+        n_class=cfg["n_class"],
+        n_units=cfg["n_units"],
+        output_type="dual2",
+        device=DEVICE,
+    )
+    return model
+
 ```
 
 ### 配置模型和数据路径
@@ -166,8 +226,3 @@ CSV_PATH = os.path.join(ROOT_DIR, "checked_samples.csv")
 
 该仓库提供了几种用于不确定性校准和软标签生成的方法，使用不同的模型架构。重点是通过集成学习、蒙特卡洛 Dropout、拉普拉斯近似和温度缩放来提高模型性能。在运行脚本之前，请确保正确配置您的模型和数据路径。
 
-如果遇到任何问题，欢迎提出建议或开具问题单。
-
----
-
-如果你需要对某些部分进一步修改或解释，随时告诉我！
